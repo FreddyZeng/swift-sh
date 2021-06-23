@@ -72,22 +72,15 @@ And then run it directly:
 $ ./foo
 ```
 
+# Sponsorship
+
+If your company depends on `swift-sh` please consider sponsoring the project.
+Otherwise it is hard for me to justify maintaining it.
+
 # Installation
 
 ```
 brew install swift-sh
-```
-
-We automatically update our own tap if homebrew/core is delayed on new releases:
-
-```
-brew install mxcl/made/swift-sh
-```
-
-Or with [Mint](https://github.com/yonaskolb/Mint):
-
-```
-mint install mxcl/swift-sh
 ```
 
 Or you can build manually using `swift build`.
@@ -168,8 +161,8 @@ $ swift sh edit ./myScript
 
 # Converting your script to a package
 
-Simple scripts can quickly become bigger projects that would benefit from being 
-packages that you build with SwiftPM. To help you migrate your project we 
+Simple scripts can quickly become bigger projects that would benefit from being
+packages that you build with SwiftPM. To help you migrate your project we
 provide `swift sh eject`, for example:
 
     $ swift sh eject foo.swift
@@ -211,10 +204,6 @@ To declare a support for specific Swift versions in your script itself, use
 * [Beak](https://github.com/yonaskolb/Beak)
 * [Marathon](https://github.com/JohnSundell/Marathon)
 
-### Get push notifications for new releases
-
-https://mxcl.dev/canopy/
-
 ---
 
 # Troubleshooting
@@ -229,4 +218,4 @@ install `swift-sh`, you will be able to run your script:
 Or see the [above installation instructions](#Installation).
 
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%20%7C%20Linux-lightgrey.svg
-[badge-languages]: https://img.shields.io/badge/swift-5.0%20%7C%205.1%20%7C%205.2%20%7C%205.3-orange.svg
+[badge-languages]: https://img.shields.io/badge/swift-5.1%20%7C%205.2%20%7C%205.3%20%7C%205.4-orange.svg

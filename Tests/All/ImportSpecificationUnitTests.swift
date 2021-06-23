@@ -102,6 +102,60 @@ class ImportSpecificationUnitTests: XCTestCase {
         XCTAssertEqual(b?.packageLine, ".package(path: \"\(cwdParent.string)\")")
     }
 
+    func testCanProvideLocalPathWithHypen() throws {
+        let tmpPath = Path.root.tmp.fake/"with-hyphen-two"/"lastone"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Foo  // /tmp/fake/with-hyphen-two/lastone", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Foo")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+
+    func testCanProvideLocalPathWithHyphenAndDotsAndSpacesOhMy() throws {
+        let tmpPath = Path.root.tmp.fake/"with-hyphen.two.one-zero"/"last one"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Foo  // /tmp/fake/with-hyphen.two.one-zero/last one", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Foo")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+
+    func testCanProvideLocalPathWithSpaces() throws {
+        let tmpPath = Path.root.tmp.fake/"with space"/"last"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Bar  // /tmp/fake/with space/last", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Bar")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+
+    func testCanProvideLocalPathWithSpacesInLast() throws {
+        let tmpPath = Path.root.tmp.fake/"with space"/"last one"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Foo  // /tmp/fake/with space/last one", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Foo")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+
+    func testCanProvideLocalPathWithSpacesAndRelativeParentsUp() throws {
+        let tmpPath = Path.root.tmp.fake.fakechild/".."/"with space"/"last"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Bar  // /tmp/fake/with space/last", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Bar")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+    
+    func testCanProvideLocalPathWithSpacesAndRelativeParentsUpTwo() throws {
+        let tmpPath = Path.root.tmp.fake.fakechild1.fakechild2/"../.."/"with space"/"last"
+        try tmpPath.mkdir(.p)
+        let b = try parse("import Bar  // /tmp/fake/with space/last", from: .path(tmpPath.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .local(tmpPath))
+        XCTAssertEqual(b?.importName, "Bar")
+        XCTAssertEqual(b?.packageLine, ".package(path: \"\(tmpPath.string)\")")
+    }
+
     func testCanProvideFullURL() throws {
         let b = try parse("import Foo  // https://example.com/mxcl/Bar.git ~> 1.0", from: .path(Path.cwd.join("script.swift")))
         XCTAssertEqual(b?.dependencyName, .url(URL(string: "https://example.com/mxcl/Bar.git")!))
@@ -124,7 +178,16 @@ class ImportSpecificationUnitTests: XCTestCase {
         XCTAssertEqual(b?.importName, "Bar")
         XCTAssertEqual(b?.dependencyName.urlString, url)
     }
-
+    
+    func testCanProvideCommonSSHURLStyle() throws {
+        let uri = "git@github.com:MariusCiocanel/Path.swift.git"
+        let b = try parse("import Path  // \(uri) ~> 1.0", from: .path(Path.cwd.join("script.swift")))
+        XCTAssertEqual(b?.dependencyName, .scp(uri))
+        XCTAssertEqual(b?.constraint, .upToNextMajor(from: .one))
+        XCTAssertEqual(b?.importName, "Path")
+        XCTAssertEqual(b?.dependencyName.urlString, "git@github.com:MariusCiocanel/Path.swift.git")
+    }
+    
     func testCanProvideCommonSSHURLStyleWithHyphen() throws {
         let uri = "git@github.com:MariusCiocanel/swift-sh.git"
         let b = try parse("import Bar  // \(uri) ~> 1.0", from: .path(Path.cwd.join("script.swift")))
@@ -169,7 +232,13 @@ class ImportSpecificationUnitTests: XCTestCase {
 
     func testSwiftVersion() {
     #if swift(>=5) || compiler(>=5.0)
-    #if compiler(>=5.3)
+    #if compiler(>=6.0)
+        let expected = "6.0"
+    #elseif compiler(>=5.5)
+        let expected = "5.5"
+    #elseif compiler(>=5.4)
+        let expected = "5.4"
+    #elseif compiler(>=5.3)
         let expected = "5.3"
     #elseif compiler(>=5.2)
         let expected = "5.2"
